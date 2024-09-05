@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import "@/components/ui/form";
@@ -12,6 +12,7 @@ export default function LocationForm() {
     const [input, setInput] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const [selectedIndex, setSelectedIndex] = useState(-1);
+    const resultRefs = useRef<(HTMLLIElement | null)[]>([]);
 
     const debouncedSetInput = useDebounceCallback((value) => {
         setInput(value);
@@ -44,12 +45,25 @@ export default function LocationForm() {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "ArrowDown") {
             e.preventDefault();
-            setSelectedIndex((prevIndex) => (prevIndex + 1) % results.length);
+            setSelectedIndex((prevIndex) => {
+                const newIndex = (prevIndex + 1) % results.length;
+                resultRefs.current[newIndex]?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+                return newIndex;
+            });
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            setSelectedIndex(
-                (prevIndex) => (prevIndex - 1 + results.length) % results.length
-            );
+            setSelectedIndex((prevIndex) => {
+                const newIndex =
+                    (prevIndex - 1 + results.length) % results.length;
+                resultRefs.current[newIndex]?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+                return newIndex;
+            });
         } else if (e.key === "Enter") {
             e.preventDefault();
             handleSubmit(selectedIndex);
@@ -92,6 +106,7 @@ export default function LocationForm() {
                     {results.map((result: SearchResult, index: number) => (
                         <li
                             key={index}
+                            ref={(el) => (resultRefs.current[index] = el)}
                             onClick={() => handleSelectResult(index)}
                             className={`p-2 border-b last:border-none hover:bg-gray-100 cursor-pointer ${
                                 selectedIndex === index ? "bg-gray-200" : ""
