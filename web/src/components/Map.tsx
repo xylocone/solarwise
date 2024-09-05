@@ -17,10 +17,19 @@ import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet/dist/leaflet.css";
 import "leaflet-geosearch/dist/geosearch.css";
 import "./style.css";
+import L from "leaflet";
 
 const pinIcon = new Icon({
     iconUrl: "https://unpkg.com/leaflet@1.6/dist/images/marker-icon.png",
     iconSize: [25, 41],
+});
+
+const icon = L.icon({
+    iconSize: [0, 0],
+    iconAnchor: [10, 41],
+    popupAnchor: [2, -40],
+    iconUrl: "https://unpkg.com/leaflet@1.6/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.6/dist/images/marker-shadow.png",
 });
 
 export default function Map() {
@@ -75,6 +84,7 @@ export default function Map() {
                 provider: new OpenStreetMapProvider(),
                 style: "bar",
                 marker: {
+                    icon,
                     draggable: true,
                 },
             });
@@ -111,11 +121,7 @@ export default function Map() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={position} icon={pinIcon}>
-                    <Popup>
-                        <h3>Your location</h3>
-                    </Popup>
-                </Marker>
+                <Marker position={position} icon={pinIcon}></Marker>
                 <CenterMapOnPosition />
                 <MapClickHandler />
                 <LeafletgeoSearch />
