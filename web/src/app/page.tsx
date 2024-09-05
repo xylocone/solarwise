@@ -1,12 +1,12 @@
-import LocationForm from "@/components/LocationForm";
+import LocationForm from "@/components/LocationForm"
 
 export default function Home() {
-    return (
-        <div className="w-full bg-slate-200 h-[70vh] flex justify-center items-center flex-col px-4">
-            <h2 className="text-5xl md:text-7xl black font-extrabold my-10">
-                Solarwise
-            </h2>
-            <LocationForm />
-        </div>
-    );
+  return (
+    <div className="flex h-[70vh] w-full flex-col items-center justify-center bg-slate-200 px-4">
+      <h2 className="black my-10 text-5xl font-extrabold md:text-7xl">
+        Solarwise
+      </h2>
+      <LocationForm />
+    </div>
+  )
 }
