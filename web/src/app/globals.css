@@ -86,3 +86,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.leaflet-container {
+  height: 50vh;
+  width: 50vw;
+  z-index: 10;
+}
