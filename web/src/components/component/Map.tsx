@@ -1,5 +1,5 @@
 "use client"
-import "../app/globals.css"
+import "../../app/globals.css"
 import "leaflet/dist/leaflet.css"
 import {
   MapContainer,
@@ -11,7 +11,7 @@ import {
 } from "react-leaflet"
 import { Icon, marker } from "leaflet"
 import { useEffect, useState } from "react"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
 import { LocateFixed } from "lucide-react"
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch"
 import "leaflet/dist/leaflet.css"
@@ -38,8 +38,8 @@ export default function Map() {
   )
 
   const [position, setPosition] = useState<[number, number]>([
-    storedLocation.x,
     storedLocation.y,
+    storedLocation.x,
   ])
   const [error, setError] = useState<string | null>(null)
 

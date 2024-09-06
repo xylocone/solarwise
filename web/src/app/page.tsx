@@ -1,4 +1,4 @@
-import LocationForm from "@/components/LocationForm"
+import LocationForm from "@/components/component/LocationForm"
 
 export default function Home() {
   return (

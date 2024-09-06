@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { useDebounceCallback } from "usehooks-ts"
 import { OpenStreetMapProvider } from "leaflet-geosearch"
 import "@/components/ui/form"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
 import { SearchResult } from "leaflet-geosearch/dist/providers/provider.js"
 import { useRouter } from "next/navigation"
 
@@ -42,6 +42,7 @@ export default function LocationForm() {
     handleSubmit(index)
   }
 
+  //handle dropdown navigation with arrows
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       e.preventDefault()
@@ -102,7 +103,9 @@ export default function LocationForm() {
           {results.map((result: SearchResult, index: number) => (
             <li
               key={index}
-              ref={el => (resultRefs.current[index] = el)}
+              ref={el => {
+                resultRefs.current[index] = el
+              }}
               onClick={() => handleSelectResult(index)}
               className={`cursor-pointer border-b p-2 last:border-none hover:bg-gray-100 ${
                 selectedIndex === index ? "bg-gray-200" : ""
