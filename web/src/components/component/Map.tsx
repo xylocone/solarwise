@@ -1,6 +1,5 @@
 "use client"
-import "../../app/globals.css"
-import "leaflet/dist/leaflet.css"
+
 import {
   MapContainer,
   Marker,
@@ -95,7 +94,7 @@ export default function Map() {
 
       // Add event listener for geosearch/marker/dragend
       map.on("geosearch/marker/dragend", event => {
-        const { lat, lng } = event.location
+        const { lat, lng } = (event as any).location
         setPosition([lng, lat])
       })
 
