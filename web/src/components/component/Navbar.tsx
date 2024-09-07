@@ -7,7 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 
-export default function Component() {
+export default function Navbar() {
   return (
     <header className="flex h-16 w-full items-center justify-between bg-background px-4 shadow-md sm:px-6 md:px-8">
       <Link href="#" className="flex items-center gap-2" prefetch={false}>
