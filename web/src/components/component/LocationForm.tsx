@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef } from "react"
 import { useDebounceCallback } from "usehooks-ts"
 import { OpenStreetMapProvider } from "leaflet-geosearch"
-import "@/components/ui/form"
 import { Button } from "../ui/button"
 import { SearchResult } from "leaflet-geosearch/dist/providers/provider.js"
 import { useRouter } from "next/navigation"
+import "@/components/ui/form"
 
 export default function LocationForm() {
   const [input, setInput] = useState("")

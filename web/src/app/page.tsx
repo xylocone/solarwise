@@ -1,4 +1,10 @@
-import LocationForm from "@/components/component/LocationForm"
+import dynamic from "next/dynamic"
+
+// Do a dynamic import to avoid (location is undefined) error
+const LocationForm = dynamic(
+  () => import("@/components/component/LocationForm"),
+  { ssr: false }
+)
 
 export default function Home() {
   return (
