@@ -40,7 +40,7 @@ def get_sdlr():
     # Get the date for the files
     sdlr_data = None
     try:
-        sdlr_data = NetCDFExtractor.get_sdl(files, lat, lon)
+        sdlr_data = NetCDFExtractor.get_sdlr(files, lat, lon)
     except Exception as e:
         return APIBaseException(
             msg="Internal Server error", code=500, payload={"error": str(e)}

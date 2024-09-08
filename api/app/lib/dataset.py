@@ -4,7 +4,7 @@ import os
 
 
 # Custom modules
-from app.utils.dates import is_valid_year, get_month
+from app.utils.dates import is_valid_year, get_month, get_valid_year_range
 
 """
 Constants
@@ -66,7 +66,7 @@ class NetCDFExtractor:
     """
 
     @staticmethod
-    def get_sdl(files: list[str], lat: float, lon: float):
+    def get_sdlr(files: list[str], lat: float, lon: float, fill_na: bool = False):
         # Check that all the files are NetCDF supported
         try:
             assert all([file.endswith(".nc") for file in files])
@@ -111,7 +111,43 @@ class NetCDFExtractor:
             # Close the dataset
             dataset.close()
 
+        # Filter the N/A with mean if so
+
         return sdl_data
+
+    @staticmethod
+    def get_sdlr_as_np(files: list[str], lat: float, lon: float):
+        """
+        Converts the result to a np array
+        """
+        sdlr_series = [
+            entry["sdlr"] for entry in NetCDFExtractor.get_sdlr(files, lat, lon)
+        ]
+        return np.array(sdlr_series)
+
+    @staticmethod
+    def __fillNA(sdl_data: list[dict[str, str]]) -> list[dict[str, str]]:
+
+        # Replace missing values with the mean of available data
+        mean_value = np.nanmean([data["sdlr"] for data in sdl_data])
+
+        for data in sdl_data:
+            # Replace '--' with mean of data for easier handling
+            value = data["sdlr"]
+            data["sdlr"] = (
+                float(value) if value != "--" or value is None else mean_value
+            )
+
+        # Handle missing months by carrying forward from the previous year
+        for year in get_valid_year_range():
+            if any(np.isnan(filled_data[year])):
+                prev_year = year - 1
+                while prev_year >= 1979 and any(np.isnan(filled_data[prev_year])):
+                    prev_year -= 1
+                filled_data[year] = [
+                    current if not np.isnan(current) else filled_data[prev_year][i]
+                    for i, current in enumerate(filled_data[year])
+                ]
 
 
 if __name__ == "__main__":
@@ -121,7 +157,7 @@ if __name__ == "__main__":
     files = reader.retrieve(year)
 
     # Get the data for the files
-    data = NetCDFExtractor.get_sdl(files, 28.676226, 77.202619)
+    data = NetCDFExtractor.get_sdlr(files, 28.676226, 77.202619)
 
     for d in data:
         print(d)

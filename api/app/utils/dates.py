@@ -6,7 +6,11 @@ __from = 1979
 # This can change to the current year by the operator
 __to = 2024
 
-__valid_date_range = range(__from, __to + 1)
+__valid_year_range = range(__from, __to + 1)
+
+
+def get_valid_year_range():
+    return __valid_year_range
 
 
 def is_valid_date(date_string):
