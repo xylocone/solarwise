@@ -2,7 +2,7 @@ import datetime
 import math
 
 # Custom modules
-from utils.dates import date_range
+from utils.dates import date_range, get_month
 from .dataset import NetCDFRetriever, NetCDFExtractor, get_solar_decline
 
 # The solar decline dataset
@@ -200,14 +200,13 @@ def get_estimated_energy(
     # Extract the SDLR data
     SDLR = NetCDFExtractor.get_sdlr(files, lat, lon)
 
-    # Average sunlight received for the particular month
-    hours = get_sunlight_hours(lat, -1, "OCT")
-    # Adjustment factor for sunlight, accounting for peak hours
-    adjustment_factor = 0.6
-    hours *= adjustment_factor
-
     # Return the energy for a particular month
     if month is not None:
+        # Average sunlight received for the particular month
+        hours = get_sunlight_hours(lat, -1, "OCT")
+        # Adjustment factor for sunlight, accounting for peak hours
+        adjustment_factor = 0.6
+        hours *= adjustment_factor
         # The SDLR for the particular month
         radiation = SDLR[month - 1]
         # Energy output for the scenario (in kWh) (in a single day)
@@ -219,6 +218,12 @@ def get_estimated_energy(
     # Else, return an average energy for the whole year
     month_energies = []
     for i in range(1, 13):  # Corrected to loop through all months (1 to 12)
+        # Average sunlight received for the particular month
+        hours = get_sunlight_hours(lat, -1, get_month(i))
+        # Adjustment factor for sunlight, accounting for peak hours
+        adjustment_factor = 0.6
+        hours *= adjustment_factor
+        # The SDLR radiation for this month
         radiation = SDLR[i - 1]
         energy = (radiation * area * hours) / 1000
         month_energies.append(energy)

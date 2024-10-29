@@ -9,6 +9,29 @@ __to = 2024
 __valid_year_range = range(__from, __to + 1)
 
 
+def get_month(month: int) -> str:
+    """
+    Returns the 3 character code for a month given it's number
+    """
+    try:
+        return [
+            "JAN",
+            "FEB",
+            "MAR",
+            "APR",
+            "MAY",
+            "JUN",
+            "JUL",
+            "AUG",
+            "SEP",
+            "OCT",
+            "NOV",
+            "DEC",
+        ][month]
+    except IndexError:
+        return "JAN"
+
+
 def get_valid_year_range():
     return __valid_year_range
 

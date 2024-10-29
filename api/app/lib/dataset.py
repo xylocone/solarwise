@@ -10,6 +10,7 @@ from app.utils.dates import is_valid_year, get_month, get_valid_year_range
 """
 Constants
 """
+STATIC_FOLDER = os.path.join("app", "static")
 DATA_FOLDER = os.path.join("app", "static", "nc")
 
 
@@ -17,7 +18,7 @@ def get_solar_decline(filename: str = "table.csv"):
     """
     Returns the solar decline dataset for the year
     """
-    with open(os.path.join(DATA_FOLDER, filename), mode="r") as rFile:
+    with open(os.path.join(STATIC_FOLDER, "csv", filename), mode="r") as rFile:
         reader = csv.DictReader(rFile, delimiter=",")
         return [line for line in reader]
 
