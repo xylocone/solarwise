@@ -218,6 +218,7 @@ def get_estimated_energy(
     # Extract the SDLR data
     SDLR = list(map(lambda dt: dt["sdlr"], NetCDFExtractor.get_sdlr(files, lat, lon)))
 
+    total = 0
     # Return the energy for a particular month
     if month is not None:
         # Average sunlight received for the particular month
@@ -231,7 +232,8 @@ def get_estimated_energy(
         energy = (radiation * area * hours) / 1000
         # Account for the efficiency of the panel
         energy *= efficiency
-        return {"order": 0, "month": get_month_abbr(month), "energy": energy}
+        total = energy
+        return {"order": 0, "month": get_month_abbr(month), "energy": energy}, total
 
     # Else, return an average energy for the whole year
     month_energies = []
@@ -248,10 +250,11 @@ def get_estimated_energy(
         month_energies.append(energy)
 
     # Return an average, adjusted for efficiency
-    for i, item in enumerate(month_energies):
-        month_energies[i] = {"order": i, "month": get_month_abbr(i), "energy": item}
+    for i, energy in enumerate(month_energies):
+        month_energies[i] = {"order": i, "month": get_month_abbr(i), "energy": energy}
+        total += energy
 
-    return month_energies
+    return month_energies, total
 
 
 if __name__ == "__main__":

@@ -65,11 +65,13 @@ def get_energy():
     area = get_or_none(json, "area")
     efficiency = get_or_none(json, "efficiency")
 
-    # try:
-    energy = get_estimated_energy(lat, lon, area, efficiency, month)
-    # except Exception as e:
-    #     return APIBaseException(
-    #         msg="Internal Server error", code=500, payload={"error": str(e)}
-    #     ).response
+    try:
+        energy, total = get_estimated_energy(lat, lon, area, efficiency, month)
+    except Exception as e:
+        return APIBaseException(
+            msg="Internal Server error", code=500, payload={"error": str(e)}
+        ).response
 
-    return Success(msg="energy for the year", payload=energy).response
+    return Success(
+        msg="energy for the year", payload={"months": energy, "total": total}
+    ).response
