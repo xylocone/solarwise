@@ -41,6 +41,41 @@ def get_month(month_number: int):
     return date.strftime("%B")
 
 
+def date_range(month_number: int, year: int) -> int:
+    """
+    Returns the number of days in the specified month of a given year.
+
+    Parameters:
+    - month_number (int): The month number (1 for January, 2 for February, ..., 12 for December).
+    - year (int): The year to check for leap years (e.g., 2024).
+
+    Returns:
+    - int: The number of days in the specified month.
+
+    Raises:
+    - ValueError: If the month_number is not between 1 and 12 (inclusive).
+
+    Note:
+    - This function correctly accounts for leap years.
+    """
+    if month_number < 1 or month_number > 12:
+        raise ValueError("Month number must be between 1 and 12.")
+
+    # Create a date for the first day of the next month
+    if month_number == 12:
+        next_month = datetime(year + 1, 1, 1)
+    else:
+        next_month = datetime(year, month_number + 1, 1)
+
+    # Create a date for the first day of the current month
+    current_month = datetime(year, month_number, 1)
+
+    # Calculate the difference in days
+    days_in_month = (next_month - current_month).days
+
+    return days_in_month
+
+
 def get_current_year():
     date = datetime.now()
     return date.strftime("%Y")

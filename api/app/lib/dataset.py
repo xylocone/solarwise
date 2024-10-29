@@ -1,5 +1,6 @@
 import netCDF4 as nc
 import numpy as np
+import csv
 import os
 
 
@@ -10,6 +11,15 @@ from app.utils.dates import is_valid_year, get_month, get_valid_year_range
 Constants
 """
 DATA_FOLDER = os.path.join("app", "static", "nc")
+
+
+def get_solar_decline(filename: str = "table.csv"):
+    """
+    Returns the solar decline dataset for the year
+    """
+    with open(os.path.join(DATA_FOLDER, filename), mode="r") as rFile:
+        reader = csv.DictReader(rFile, delimiter=",")
+        return [line for line in reader]
 
 
 class NetCDFRetriever:
@@ -138,16 +148,9 @@ class NetCDFExtractor:
                 float(value) if value != "--" or value is None else mean_value
             )
 
-        # Handle missing months by carrying forward from the previous year
-        for year in get_valid_year_range():
-            if any(np.isnan(filled_data[year])):
-                prev_year = year - 1
-                while prev_year >= 1979 and any(np.isnan(filled_data[prev_year])):
-                    prev_year -= 1
-                filled_data[year] = [
-                    current if not np.isnan(current) else filled_data[prev_year][i]
-                    for i, current in enumerate(filled_data[year])
-                ]
+        # Handle missing months by carrying forward from the previous year,
+        # this can happen only for the recent years, lets set the threshold
+        threshold = 3
 
 
 if __name__ == "__main__":
