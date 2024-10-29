@@ -2,7 +2,7 @@ import datetime
 import math
 
 # Custom modules
-from utils.dates import date_range, get_month
+from app.utils.dates import date_range, get_month_abbr
 from .dataset import NetCDFRetriever, NetCDFExtractor, get_solar_decline
 
 # The solar decline dataset
@@ -31,6 +31,10 @@ def get_sunlight_hours(lat: float, date: int, month: str) -> float:
 
     def get_hours(date):
         delta = delta_map[date - 1][month]
+        # If the value is none, return none
+        if not delta or len(delta) == 0:
+            return None
+
         # Convert the DMS string to decimal degrees
         delta_degrees = dms_to_decimal(*parse_dms(delta))
         # Get the omega (solar angle) for the delta and phi
@@ -46,14 +50,20 @@ def get_sunlight_hours(lat: float, date: int, month: str) -> float:
     hours = []
 
     # If the date is provided as -1, then range it from start to end
-    for i in range(date_range(month, datetime.datetime.now().year)):
-        delta = delta_map[i][month]
-        # Convert the DMS string to decimal degrees
-        delta_degrees = dms_to_decimal(*parse_dms(delta))
-        # Get the omega (solar angle) for the delta and phi
-        omega = calculate_omegao(delta_degrees, phi)
-        # Adjust the omega to watch time
-        hours.append(omega * (24 / math.pi))
+    for j in range(1, 13):
+        for i in range(date_range(j, datetime.datetime.now().year)):
+            delta = delta_map[i][month]
+
+            # Skip the iteration of the data point is None
+            if not delta or len(delta) == 0:
+                continue
+
+            # Convert the DMS string to decimal degrees
+            delta_degrees = dms_to_decimal(*parse_dms(delta))
+            # Get the omega (solar angle) for the delta and phi
+            omega = calculate_omegao(delta_degrees, phi)
+            # Adjust the omega to watch time
+            hours.append(omega * (24 / math.pi))
 
     return sum(hours) / len(hours)
 
@@ -82,15 +92,19 @@ def parse_dms(dms_str: str) -> tuple:
     dms_str = dms_str.strip()
 
     # Extract the direction (last character)
-    direction = dms_str[0]
-
-    # Remove the direction from the string
-    dms_str = dms_str[1:].strip()
+    direction = "N"
+    if dms_str[0] == "0":
+        direction = "N"
+    else:
+        direction = dms_str[0]
+        # Remove the direction from the string
+        dms_str = dms_str[1:].strip()
 
     # Split the string by degree and minute symbols
     if "°" in dms_str:
         degrees, minutes = dms_str.split("°")
-        degrees = int(degrees.strip())
+        degrees = degrees.encode("ascii", "ignore").decode().strip()
+        degrees = int(degrees)
 
         if "'" in minutes:
             minutes, seconds = minutes.split("'")
@@ -155,7 +169,7 @@ def get_estimated_energy(
     lat: float,
     lon: float,
     area: float,
-    efficiency: float = 0.223,
+    efficiency: float | None = 0.223,
     month: int | None = None,
 ) -> float | None:
     """
@@ -183,6 +197,10 @@ def get_estimated_energy(
     - The sunlight hours are adjusted with an empirical factor of 0.6 to account for peak hours.
     """
     year = datetime.datetime.now().year - 1
+    # Redefine efficiency with a constants
+    efficiency = efficiency or 0.223
+    # Round the month for inputs
+    month = month % 12 if month is not None else None
 
     # Retrieve for the last year
     files = None
@@ -198,12 +216,12 @@ def get_estimated_energy(
         return None
 
     # Extract the SDLR data
-    SDLR = NetCDFExtractor.get_sdlr(files, lat, lon)
+    SDLR = list(map(lambda dt: dt["sdlr"], NetCDFExtractor.get_sdlr(files, lat, lon)))
 
     # Return the energy for a particular month
     if month is not None:
         # Average sunlight received for the particular month
-        hours = get_sunlight_hours(lat, -1, "OCT")
+        hours = get_sunlight_hours(lat, -1, get_month_abbr(month))
         # Adjustment factor for sunlight, accounting for peak hours
         adjustment_factor = 0.6
         hours *= adjustment_factor
@@ -213,23 +231,27 @@ def get_estimated_energy(
         energy = (radiation * area * hours) / 1000
         # Account for the efficiency of the panel
         energy *= efficiency
-        return energy
+        return {"order": 0, "month": get_month_abbr(month), "energy": energy}
 
     # Else, return an average energy for the whole year
     month_energies = []
     for i in range(1, 13):  # Corrected to loop through all months (1 to 12)
         # Average sunlight received for the particular month
-        hours = get_sunlight_hours(lat, -1, get_month(i))
+        hours = get_sunlight_hours(lat, -1, get_month_abbr(i))
         # Adjustment factor for sunlight, accounting for peak hours
         adjustment_factor = 0.6
         hours *= adjustment_factor
         # The SDLR radiation for this month
         radiation = SDLR[i - 1]
         energy = (radiation * area * hours) / 1000
+        energy *= efficiency * date_range(i, year)
         month_energies.append(energy)
 
     # Return an average, adjusted for efficiency
-    return efficiency * (sum(month_energies) / 12)
+    for i, item in enumerate(month_energies):
+        month_energies[i] = {"order": i, "month": get_month_abbr(i), "energy": item}
+
+    return month_energies
 
 
 if __name__ == "__main__":
@@ -241,10 +263,10 @@ if __name__ == "__main__":
     """
     # lat, lon = 59.878600, 8.602518 # Oslo, Norway
     # lat, lon = 65.103108, -18.533889 # For Iceland
-    # lat, lon = 32.270349, 75.653447 # For Pathankot, Punjab
+    lat, lon = 32.270349, 75.653447  # For Pathankot, Punjab
     # lat, lon = 28.670076, 77.203393 # Delhi, India
     # lat, lon = 8.617664, 77.121907 # Southern Kerala
-    lat, lon = 26.125889, 91.700524  # Guwahati, Assam
+    # lat, lon = 26.125889, 91.700524  # Guwahati, Assam
 
     print("hours: ", get_sunlight_hours(lat, 29, "OCT"))
 
