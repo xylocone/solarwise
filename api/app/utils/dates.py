@@ -30,7 +30,7 @@ def is_valid_year(year: int):
     """
     checks if the given year is within the valid range
     """
-    return year in __valid_date_range
+    return year in __valid_year_range
 
 
 def get_month(month_number: int):
