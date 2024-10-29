@@ -14,7 +14,7 @@ STATIC_FOLDER = os.path.join("app", "static")
 DATA_FOLDER = os.path.join("app", "static", "nc")
 
 
-def get_solar_decline(filename: str = "table.csv"):
+def get_solar_decline(filename: str = "delta_table.csv"):
     """
     Returns the solar decline dataset for the year
     """
