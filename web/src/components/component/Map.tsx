@@ -3,12 +3,11 @@
 import {
   MapContainer,
   Marker,
-  Popup,
   TileLayer,
   useMap,
   useMapEvents,
 } from "react-leaflet"
-import { Icon, marker } from "leaflet"
+import { Icon } from "leaflet"
 import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import { LocateFixed } from "lucide-react"
@@ -44,6 +43,15 @@ export default function Map() {
 
   const handleSuccess = (position: GeolocationPosition) => {
     const { latitude, longitude } = position.coords
+    // Update the local storage
+    localStorage.setItem(
+      "user-location",
+      JSON.stringify({
+        x: latitude,
+        y: longitude,
+      })
+    )
+    // Update the current state
     setPosition([latitude, longitude])
   }
 
@@ -111,7 +119,7 @@ export default function Map() {
   console.log("User location: ", position)
 
   return (
-    <div className="relative m-auto">
+    <div className="relative basis-1/2">
       <MapContainer center={position} zoom={15} scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

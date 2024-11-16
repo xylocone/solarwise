@@ -5,6 +5,6 @@ export const calculateFormSchema = z.object({
   pvTechnology: z.enum(["monocrystalline", "polycrystalline", "thinFilm"], {
     errorMap: () => ({ message: "PV technology is required" }),
   }),
-  azimuth: z.string(),
-  mountingSlope: z.string(),
+  // azimuth: z.string(),
+  // mountingSlope: z.string(),
 })

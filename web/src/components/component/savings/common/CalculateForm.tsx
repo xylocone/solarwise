@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import {
   Card,
   CardHeader,
@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { calculateFormSchema } from "@/schema/schema"
 import { calculateAction } from "@/actions/actions"
+import { EnergyEstimation } from "@/types"
 
 type FormErrors = {
   roofArea?: string[]
@@ -34,15 +35,29 @@ type FormErrors = {
   mountingSlope?: string[]
 }
 
-export default function Form() {
+export default function CalculateForm({
+  setProduction,
+}: {
+  setProduction: React.Dispatch<React.SetStateAction<EnergyEstimation | null>>
+}) {
+  // Get the position of the user stored from the local-storage
+  const storedLocation = JSON.parse(
+    localStorage.getItem("user-location") || "null"
+  )
+
+  const [position, setPosition] = useState<[number, number]>([
+    storedLocation.y,
+    storedLocation.x,
+  ])
+
   const [errors, setErrors] = useState<FormErrors>({})
 
   const clientAction = async (formData: FormData) => {
     const newData = {
       roofArea: formData.get("roofArea"),
       pvTechnology: formData.get("pvTechnology"),
-      azimuth: formData.get("azimuth"),
-      mountingSlope: formData.get("mountingSlope"),
+      // azimuth: formData.get("azimuth"),
+      // mountingSlope: formData.get("mountingSlope"),
     }
     const result = calculateFormSchema.safeParse(newData)
     if (!result.success) {
@@ -51,14 +66,18 @@ export default function Form() {
       return
     }
 
-    console.log(result.data)
-
     setErrors({})
-    await calculateAction(result.data)
+
+    calculateAction({
+      area: Number(result.data.roofArea),
+      technology: result.data.pvTechnology,
+      lat: position[0],
+      lon: position[1],
+    }).then(result => setProduction(result ? result.payload : null))
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="max-w-md grow basis-1/2">
       <CardHeader>
         <CardTitle className="text-2xl">Solar Savings Calculator</CardTitle>
         <CardDescription>
@@ -73,10 +92,10 @@ export default function Form() {
               id="roofArea"
               name="roofArea"
               type="number"
-              placeholder="Enter roof area (sq ft)"
+              placeholder="Enter roof area (sq meters)"
             />
             {errors.roofArea && (
-              <p className="text-red-500 text-sm">{errors.roofArea}</p>
+              <p className="text-sm text-red-500">{errors.roofArea}</p>
             )}
           </div>
           <div className="grid gap-2">
@@ -92,7 +111,7 @@ export default function Form() {
               </SelectContent>
             </Select>
             {errors.pvTechnology && (
-              <p className="text-red-500 text-sm">{errors.pvTechnology}</p>
+              <p className="text-sm text-red-500">{errors.pvTechnology}</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -115,13 +134,16 @@ export default function Form() {
                 </TooltipProvider>
               </Label>
               <Input
+                required={false}
+                disabled
+                value={0}
                 id="azimuth"
                 name="azimuth"
                 type="number"
                 placeholder="Enter azimuth (degrees)"
               />
               {errors.azimuth && (
-                <p className="text-red-500 text-sm">{errors.azimuth}</p>
+                <p className="text-sm text-red-500">{errors.azimuth}</p>
               )}
             </div>
             <div className="grid gap-2">
@@ -143,13 +165,16 @@ export default function Form() {
                 </TooltipProvider>
               </Label>
               <Input
+                required={false}
+                disabled
+                value={15}
                 id="mountingSlope"
                 name="mountingSlope"
                 type="number"
                 placeholder="Enter mounting slope (degrees)"
               />
               {errors.mountingSlope && (
-                <p className="text-red-500 text-sm">{errors.mountingSlope}</p>
+                <p className="text-sm text-red-500">{errors.mountingSlope}</p>
               )}
             </div>
           </div>
@@ -161,6 +186,7 @@ export default function Form() {
     </Card>
   )
 }
+
 
 function InfoIcon(props: any) {
   return (
@@ -182,3 +208,4 @@ function InfoIcon(props: any) {
     </svg>
   )
 }
+

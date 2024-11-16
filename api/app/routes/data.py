@@ -2,7 +2,7 @@ from flask import Blueprint, request
 
 # Custom modules
 from app.lib.dataset import NetCDFExtractor, NetCDFRetriever
-from app.lib.energy import get_estimated_energy
+from app.lib.energy import get_estimated_energy, get_estimated_energy_by_year
 from app.utils.validators import get_or_none
 from app.utils.dates import get_current_year
 
@@ -59,14 +59,42 @@ def get_energy():
     json = request.get_json()
 
     # Get the required values
-    month = get_or_none(json, "month")
     lat = get_or_none(json, "lat")
     lon = get_or_none(json, "lon")
     area = get_or_none(json, "area")
     efficiency = get_or_none(json, "efficiency")
+    month = get_or_none(json, "month")
 
     try:
         energy, total = get_estimated_energy(lat, lon, area, efficiency, month)
+    except Exception as e:
+        return APIBaseException(
+            msg="Internal Server error", code=500, payload={"error": str(e)}
+        ).response
+
+    return Success(
+        msg="energy for the year", payload={"months": energy, "total": total}
+    ).response
+
+
+@data_bp.route("/energy/predict", methods=["POST"])
+def get_energy_prediction():
+    """
+    Returns the prediction for generation of energy by the panels
+    """
+    json = request.get_json()
+
+    # Get the required values
+    lat = get_or_none(json, "lat")
+    lon = get_or_none(json, "lon")
+    area = get_or_none(json, "area")
+    efficiency = get_or_none(json, "efficiency")
+    to_year = get_or_none(json, "to_year")
+
+    try:
+        energy, total = get_estimated_energy_by_year(
+            lat, lon, area, to_year, efficiency
+        )
     except Exception as e:
         return APIBaseException(
             msg="Internal Server error", code=500, payload={"error": str(e)}
